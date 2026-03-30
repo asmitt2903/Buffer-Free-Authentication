@@ -1,0 +1,10 @@
+.DS_Store
+
+# Logs & sensitive
+*.log
+*.key
+secure_users.json
+
+# Build files
+build/
+dist/
