@@ -1,13 +1,45 @@
-# ==============================
-# MODIFIED UI
-# ==============================
+# ==========================================
+# FINAL UI...
+# ==========================================
 
 import customtkinter as ctk
+import tkinter as tk
 from tkinter import messagebox
 import random
+import math
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
+
+# -----------------------------
+# PARTICLE BACKGROUND
+# -----------------------------
+class ParticleCanvas(tk.Canvas):
+    def __init__(self, parent):
+        super().__init__(parent, bg="#020617", highlightthickness=0)
+        self.pack(fill="both", expand=True)
+        self.particles = [self.create_particle() for _ in range(40)]
+        self.animate()
+
+    def create_particle(self):
+        x = random.randint(0, 1200)
+        y = random.randint(0, 700)
+        size = random.randint(2, 4)
+        speed = random.uniform(0.3, 1.2)
+        return {"x": x, "y": y, "size": size, "speed": speed}
+
+    def animate(self):
+        self.delete("all")
+        for p in self.particles:
+            p["y"] += p["speed"]
+            if p["y"] > 700:
+                p["y"] = 0
+            self.create_oval(
+                p["x"], p["y"],
+                p["x"] + p["size"], p["y"] + p["size"],
+                fill="#22d3ee", outline=""
+            )
+        self.after(30, self.animate)
 
 # -----------------------------
 # MAIN APP
@@ -16,11 +48,13 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Secure Monitor 🚀")
-        self.geometry("1200x700")
+        self.title("⚡ LEGEND SECURITY SYSTEM")
+        self.geometry("1300x750")
 
-        self.container = ctk.CTkFrame(self, fg_color="#0f172a")
-        self.container.pack(fill="both", expand=True)
+        self.canvas = ParticleCanvas(self)
+
+        self.container = ctk.CTkFrame(self.canvas, fg_color="transparent")
+        self.canvas.create_window(0, 0, anchor="nw", window=self.container, relwidth=1, relheight=1)
 
         self.show_login()
 
@@ -32,146 +66,76 @@ class App(ctk.CTk):
         self.clear()
         LoginUI(self.container, self)
 
-    def show_dashboard(self, user="admin"):
+    def show_dashboard(self):
         self.clear()
-        DashboardUI(self.container, self, user)
+        DashboardUI(self.container, self)
 
 # -----------------------------
-# LOGIN UI (GLASS CARD)
+# LOGIN UI
 # -----------------------------
 class LoginUI(ctk.CTkFrame):
     def __init__(self, parent, app):
-        super().__init__(parent, fg_color="#0f172a")
+        super().__init__(parent, fg_color="#0f172a", corner_radius=30)
         self.app = app
-        self.pack(expand=True)
+        self.place(relx=0.5, rely=0.5, anchor="center")
 
-        card = ctk.CTkFrame(self, corner_radius=25, fg_color="#1e293b")
-        card.pack(pady=120, padx=250)
+        ctk.CTkLabel(self, text="⚡ LEGEND ACCESS",
+                     font=("Segoe UI", 30, "bold"),
+                     text_color="#22d3ee").pack(pady=20)
 
-        ctk.CTkLabel(
-            card,
-            text="🔐 Secure Access",
-            font=("Segoe UI", 30, "bold"),
-            text_color="#60a5fa"
-        ).pack(pady=25)
-
-        self.user = ctk.CTkEntry(card, placeholder_text="Username", width=300)
+        self.user = ctk.CTkEntry(self, placeholder_text="USERNAME", width=280)
         self.user.pack(pady=10)
 
-        self.pwd = ctk.CTkEntry(card, placeholder_text="Password", show="*", width=300)
+        self.pwd = ctk.CTkEntry(self, placeholder_text="PASSWORD", show="*", width=280)
         self.pwd.pack(pady=10)
 
-        ctk.CTkButton(
-            card,
-            text="Login",
-            width=250,
-            corner_radius=15,
-            fg_color="#3b82f6",
-            hover_color="#2563eb",
-            command=self.login
-        ).pack(pady=15)
-
-        ctk.CTkButton(
-            card,
-            text="Register",
-            width=250,
-            corner_radius=15,
-            fg_color="#334155"
-        ).pack(pady=5)
+        ctk.CTkButton(self, text="ENTER SYSTEM",
+                      fg_color="#06b6d4",
+                      command=self.login).pack(pady=15)
 
     def login(self):
-        u = self.user.get()
-        p = self.pwd.get()
-
-        if u == "admin" and p == "admin":
-            self.app.show_dashboard(u)
+        if self.user.get() == "admin":
+            self.app.show_dashboard()
         else:
-            messagebox.showerror("Error", "Invalid Credentials")
+            messagebox.showerror("DENIED", "ACCESS FAILED")
 
 # -----------------------------
-# DASHBOARD UI (GLASS STYLE)
+# DASHBOARD
 # -----------------------------
 class DashboardUI(ctk.CTkFrame):
-    def __init__(self, parent, app, user):
-        super().__init__(parent, fg_color="#0f172a")
-        self.app = app
+    def __init__(self, parent, app):
+        super().__init__(parent, fg_color="transparent")
         self.pack(fill="both", expand=True)
 
-        # Sidebar
-        sidebar = ctk.CTkFrame(self, width=220, fg_color="#1e293b")
-        sidebar.pack(side="left", fill="y")
+        content = ctk.CTkFrame(self, fg_color="transparent")
+        content.pack(fill="both", expand=True, padx=20, pady=20)
 
-        ctk.CTkLabel(
-            sidebar,
-            text="⚡ SYSTEM",
-            font=("Segoe UI", 22, "bold"),
-            text_color="#60a5fa"
-        ).pack(pady=20)
+        self.cpu = self.card(content, "CPU")
+        self.cpu.pack(pady=10)
 
-        ctk.CTkLabel(
-            sidebar,
-            text=f"User: {user}",
-            text_color="#cbd5f5"
-        ).pack(pady=10)
+        self.mem = self.card(content, "MEMORY")
+        self.mem.pack(pady=10)
 
-        self.btn(sidebar, "🔑 Rotate Keys").pack(pady=5)
-        self.btn(sidebar, "📜 Logs").pack(pady=5)
+        self.term = self.card(content, "TERMINAL")
+        self.term.pack(pady=10)
 
-        self.btn(
-            sidebar,
-            "🚪 Logout",
-            "#ef4444",
-            "#dc2626",
-            self.app.show_login
-        ).pack(side="bottom", pady=20)
-
-        # Main Content
-        content = ctk.CTkFrame(self, fg_color="#0f172a")
-        content.pack(side="right", fill="both", expand=True, padx=20, pady=20)
-
-        content.grid_columnconfigure((0, 1), weight=1)
-
-        # Cards
-        self.cpu = self.card(content, "CPU Usage")
-        self.cpu.grid(row=0, column=0, padx=15, pady=15, sticky="nsew")
-
-        self.mem = self.card(content, "Memory")
-        self.mem.grid(row=0, column=1, padx=15, pady=15, sticky="nsew")
-
-        self.net = self.card(content, "Network Activity")
-        self.net.grid(row=1, column=0, columnspan=2, padx=15, pady=15, sticky="nsew")
-
-        # Widgets
         self.cpu_bar = ctk.CTkProgressBar(self.cpu)
-        self.cpu_bar.pack(pady=20, padx=30)
+        self.cpu_bar.pack(pady=10)
 
         self.mem_bar = ctk.CTkProgressBar(self.mem)
-        self.mem_bar.pack(pady=20, padx=30)
+        self.mem_bar.pack(pady=10)
 
-        self.net_label = ctk.CTkLabel(self.net, text="Speed: 0 KB/s")
-        self.net_label.pack(pady=25)
+        self.terminal = ctk.CTkTextbox(self.term, height=120)
+        self.terminal.pack(fill="both", padx=10, pady=10)
 
         self.animate()
-
-    def btn(self, parent, text, fg="#3b82f6", hover="#2563eb", cmd=None):
-        return ctk.CTkButton(
-            parent,
-            text=text,
-            width=160,
-            corner_radius=12,
-            fg_color=fg,
-            hover_color=hover,
-            command=cmd
-        )
+        self.logs()
 
     def card(self, parent, title):
-        card = ctk.CTkFrame(parent, corner_radius=20, fg_color="#1e293b")
-        ctk.CTkLabel(
-            card,
-            text=title,
-            font=("Segoe UI", 18, "bold"),
-            text_color="#93c5fd"
-        ).pack(pady=15)
+        card = ctk.CTkFrame(parent, corner_radius=20, fg_color="#0f172a")
+        ctk.CTkLabel(card, text=title,
+                     font=("Segoe UI", 16, "bold"),
+                     text_color="#22d3ee").pack(pady=10)
         return card
 
     def animate(self):
@@ -181,9 +145,13 @@ class DashboardUI(ctk.CTkFrame):
         self.cpu_bar.set(cpu / 100)
         self.mem_bar.set(mem / 100)
 
-        self.net_label.configure(text=f"CPU {cpu}% | RAM {mem}%")
+        self.after(700, self.animate)
 
-        self.after(1000, self.animate)
+    def logs(self):
+        msgs = ["Scanning...", "Encrypting...", "Monitoring...", "System OK"]
+        self.terminal.insert("end", f"> {random.choice(msgs)}\n")
+        self.terminal.see("end")
+        self.after(1000, self.logs)
 
 # -----------------------------
 # RUN
