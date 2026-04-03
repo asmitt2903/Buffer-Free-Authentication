@@ -1,25 +1,13 @@
 # ==============================
-# MODERN UI
+# MODIFIED UI
 # ==============================
 
 import customtkinter as ctk
-from tkinter import messagebox, simpledialog
-import psutil, time, threading, datetime
+from tkinter import messagebox
+import random
 
-# -----------------------------
-# THEME
-# -----------------------------
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
-
-# -----------------------------
-# DUMMY AUTH (Replace with yours)
-# -----------------------------
-class AuthManager:
-    def login(self, u, p, otp=None):
-        if u == "admin" and p == "admin":
-            return True, "Success"
-        return False, "Invalid"
 
 # -----------------------------
 # MAIN APP
@@ -29,11 +17,9 @@ class App(ctk.CTk):
         super().__init__()
 
         self.title("Secure Monitor 🚀")
-        self.geometry("1100x650")
+        self.geometry("1200x700")
 
-        self.auth = AuthManager()
-
-        self.container = ctk.CTkFrame(self)
+        self.container = ctk.CTkFrame(self, fg_color="#0f172a")
         self.container.pack(fill="both", expand=True)
 
         self.show_login()
@@ -44,109 +30,160 @@ class App(ctk.CTk):
 
     def show_login(self):
         self.clear()
-        LoginFrame(self.container, self)
+        LoginUI(self.container, self)
 
-    def show_dashboard(self, user):
+    def show_dashboard(self, user="admin"):
         self.clear()
-        Dashboard(self.container, self, user)
+        DashboardUI(self.container, self, user)
 
 # -----------------------------
-# LOGIN UI
+# LOGIN UI (GLASS CARD)
 # -----------------------------
-class LoginFrame(ctk.CTkFrame):
+class LoginUI(ctk.CTkFrame):
     def __init__(self, parent, app):
-        super().__init__(parent)
+        super().__init__(parent, fg_color="#0f172a")
         self.app = app
         self.pack(expand=True)
 
-        card = ctk.CTkFrame(self, corner_radius=20)
-        card.pack(pady=100, padx=100)
+        card = ctk.CTkFrame(self, corner_radius=25, fg_color="#1e293b")
+        card.pack(pady=120, padx=250)
 
-        ctk.CTkLabel(card, text="🔐 Secure Login", font=("Segoe UI", 26, "bold")).pack(pady=20)
+        ctk.CTkLabel(
+            card,
+            text="🔐 Secure Access",
+            font=("Segoe UI", 30, "bold"),
+            text_color="#60a5fa"
+        ).pack(pady=25)
 
-        self.user = ctk.CTkEntry(card, placeholder_text="Username")
-        self.user.pack(pady=10, padx=40)
+        self.user = ctk.CTkEntry(card, placeholder_text="Username", width=300)
+        self.user.pack(pady=10)
 
-        self.pwd = ctk.CTkEntry(card, placeholder_text="Password", show="*")
-        self.pwd.pack(pady=10, padx=40)
+        self.pwd = ctk.CTkEntry(card, placeholder_text="Password", show="*", width=300)
+        self.pwd.pack(pady=10)
 
-        ctk.CTkButton(card, text="Login", command=self.login).pack(pady=10)
-        ctk.CTkButton(card, text="Register", fg_color="gray").pack(pady=5)
+        ctk.CTkButton(
+            card,
+            text="Login",
+            width=250,
+            corner_radius=15,
+            fg_color="#3b82f6",
+            hover_color="#2563eb",
+            command=self.login
+        ).pack(pady=15)
+
+        ctk.CTkButton(
+            card,
+            text="Register",
+            width=250,
+            corner_radius=15,
+            fg_color="#334155"
+        ).pack(pady=5)
 
     def login(self):
         u = self.user.get()
         p = self.pwd.get()
 
-        status, msg = self.app.auth.login(u, p)
-
-        if status:
+        if u == "admin" and p == "admin":
             self.app.show_dashboard(u)
         else:
-            messagebox.showerror("Error", msg)
+            messagebox.showerror("Error", "Invalid Credentials")
 
 # -----------------------------
-# DASHBOARD UI
+# DASHBOARD UI (GLASS STYLE)
 # -----------------------------
-class Dashboard(ctk.CTkFrame):
+class DashboardUI(ctk.CTkFrame):
     def __init__(self, parent, app, user):
-        super().__init__(parent)
+        super().__init__(parent, fg_color="#0f172a")
         self.app = app
-        self.user = user
         self.pack(fill="both", expand=True)
 
         # Sidebar
-        sidebar = ctk.CTkFrame(self, width=200)
+        sidebar = ctk.CTkFrame(self, width=220, fg_color="#1e293b")
         sidebar.pack(side="left", fill="y")
 
-        ctk.CTkLabel(sidebar, text="⚡ SYSTEM", font=("Segoe UI", 18, "bold")).pack(pady=20)
-        ctk.CTkLabel(sidebar, text=f"User: {user}").pack(pady=10)
+        ctk.CTkLabel(
+            sidebar,
+            text="⚡ SYSTEM",
+            font=("Segoe UI", 22, "bold"),
+            text_color="#60a5fa"
+        ).pack(pady=20)
 
-        ctk.CTkButton(sidebar, text="🔑 Rotate Keys").pack(pady=5)
-        ctk.CTkButton(sidebar, text="🚪 Logout", fg_color="red",
-                      command=self.app.show_login).pack(side="bottom", pady=20)
+        ctk.CTkLabel(
+            sidebar,
+            text=f"User: {user}",
+            text_color="#cbd5f5"
+        ).pack(pady=10)
 
-        # Content
-        content = ctk.CTkFrame(self)
+        self.btn(sidebar, "🔑 Rotate Keys").pack(pady=5)
+        self.btn(sidebar, "📜 Logs").pack(pady=5)
+
+        self.btn(
+            sidebar,
+            "🚪 Logout",
+            "#ef4444",
+            "#dc2626",
+            self.app.show_login
+        ).pack(side="bottom", pady=20)
+
+        # Main Content
+        content = ctk.CTkFrame(self, fg_color="#0f172a")
         content.pack(side="right", fill="both", expand=True, padx=20, pady=20)
 
+        content.grid_columnconfigure((0, 1), weight=1)
+
         # Cards
-        self.cpu_card = self.card(content, "CPU Usage")
-        self.cpu_card.grid(row=0, column=0, padx=10, pady=10)
+        self.cpu = self.card(content, "CPU Usage")
+        self.cpu.grid(row=0, column=0, padx=15, pady=15, sticky="nsew")
 
-        self.mem_card = self.card(content, "Memory")
-        self.mem_card.grid(row=0, column=1, padx=10, pady=10)
+        self.mem = self.card(content, "Memory")
+        self.mem.grid(row=0, column=1, padx=15, pady=15, sticky="nsew")
 
-        self.net_card = self.card(content, "Network")
-        self.net_card.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+        self.net = self.card(content, "Network Activity")
+        self.net.grid(row=1, column=0, columnspan=2, padx=15, pady=15, sticky="nsew")
 
         # Widgets
-        self.cpu_bar = ctk.CTkProgressBar(self.cpu_card)
-        self.cpu_bar.pack(pady=10)
+        self.cpu_bar = ctk.CTkProgressBar(self.cpu)
+        self.cpu_bar.pack(pady=20, padx=30)
 
-        self.mem_bar = ctk.CTkProgressBar(self.mem_card)
-        self.mem_bar.pack(pady=10)
+        self.mem_bar = ctk.CTkProgressBar(self.mem)
+        self.mem_bar.pack(pady=20, padx=30)
 
-        self.net_label = ctk.CTkLabel(self.net_card, text="Speed: 0 KB/s")
-        self.net_label.pack(pady=10)
+        self.net_label = ctk.CTkLabel(self.net, text="Speed: 0 KB/s")
+        self.net_label.pack(pady=25)
 
-        threading.Thread(target=self.update_stats, daemon=True).start()
+        self.animate()
+
+    def btn(self, parent, text, fg="#3b82f6", hover="#2563eb", cmd=None):
+        return ctk.CTkButton(
+            parent,
+            text=text,
+            width=160,
+            corner_radius=12,
+            fg_color=fg,
+            hover_color=hover,
+            command=cmd
+        )
 
     def card(self, parent, title):
-        card = ctk.CTkFrame(parent, corner_radius=15)
-        ctk.CTkLabel(card, text=title, font=("Segoe UI", 16, "bold")).pack(pady=10)
+        card = ctk.CTkFrame(parent, corner_radius=20, fg_color="#1e293b")
+        ctk.CTkLabel(
+            card,
+            text=title,
+            font=("Segoe UI", 18, "bold"),
+            text_color="#93c5fd"
+        ).pack(pady=15)
         return card
 
-    def update_stats(self):
-        while True:
-            cpu = psutil.cpu_percent()
-            mem = psutil.virtual_memory().percent
+    def animate(self):
+        cpu = random.randint(10, 90)
+        mem = random.randint(20, 80)
 
-            self.cpu_bar.set(cpu / 100)
-            self.mem_bar.set(mem / 100)
+        self.cpu_bar.set(cpu / 100)
+        self.mem_bar.set(mem / 100)
 
-            self.net_label.configure(text=f"CPU {cpu}% | RAM {mem}%")
+        self.net_label.configure(text=f"CPU {cpu}% | RAM {mem}%")
 
-            time.sleep(1)
+        self.after(1000, self.animate)
 
 # -----------------------------
 # RUN
