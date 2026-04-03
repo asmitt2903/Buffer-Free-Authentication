@@ -1,161 +1,148 @@
-# ==========================================
-# FINAL UI...
-# ==========================================
-
-import customtkinter as ctk
-import tkinter as tk
-from tkinter import messagebox
-import random
-import math
-
-ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("blue")
+import sys, random, psutil
+from PyQt6.QtWidgets import *
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
+import pyqtgraph as pg
 
 # -----------------------------
-# PARTICLE BACKGROUND
+# LOGIN WINDOW
 # -----------------------------
-class ParticleCanvas(tk.Canvas):
-    def __init__(self, parent):
-        super().__init__(parent, bg="#020617", highlightthickness=0)
-        self.pack(fill="both", expand=True)
-        self.particles = [self.create_particle() for _ in range(40)]
-        self.animate()
-
-    def create_particle(self):
-        x = random.randint(0, 1200)
-        y = random.randint(0, 700)
-        size = random.randint(2, 4)
-        speed = random.uniform(0.3, 1.2)
-        return {"x": x, "y": y, "size": size, "speed": speed}
-
-    def animate(self):
-        self.delete("all")
-        for p in self.particles:
-            p["y"] += p["speed"]
-            if p["y"] > 700:
-                p["y"] = 0
-            self.create_oval(
-                p["x"], p["y"],
-                p["x"] + p["size"], p["y"] + p["size"],
-                fill="#22d3ee", outline=""
-            )
-        self.after(30, self.animate)
-
-# -----------------------------
-# MAIN APP
-# -----------------------------
-class App(ctk.CTk):
+class LoginWindow(QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowTitle("⚡ Secure Cyber System")
+        self.setGeometry(200, 100, 1200, 700)
 
-        self.title("⚡ LEGEND SECURITY SYSTEM")
-        self.geometry("1300x750")
+        self.setStyleSheet("""
+        QWidget { background:#0a0f1c; color:white; font-family:Segoe UI; }
+        QFrame { background:#111827; border-radius:20px; border:2px solid #22d3ee; }
+        QLineEdit { padding:10px; border-radius:10px; border:1px solid #22d3ee; background:#1f2937; }
+        QPushButton { background:#06b6d4; border-radius:15px; padding:10px; font-weight:bold; }
+        QPushButton:hover { background:#0891b2; }
+        """)
 
-        self.canvas = ParticleCanvas(self)
+        layout = QVBoxLayout()
 
-        self.container = ctk.CTkFrame(self.canvas, fg_color="transparent")
-        self.canvas.create_window(0, 0, anchor="nw", window=self.container, relwidth=1, relheight=1)
+        card = QFrame()
+        card.setFixedSize(400, 300)
+        v = QVBoxLayout()
 
-        self.show_login()
+        title = QLabel("⚡ LEGEND ACCESS")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("font-size:24px; color:#22d3ee;")
+        v.addWidget(title)
 
-    def clear(self):
-        for w in self.container.winfo_children():
-            w.destroy()
+        self.user = QLineEdit()
+        self.user.setPlaceholderText("USERNAME")
+        v.addWidget(self.user)
 
-    def show_login(self):
-        self.clear()
-        LoginUI(self.container, self)
+        self.pwd = QLineEdit()
+        self.pwd.setPlaceholderText("PASSWORD")
+        self.pwd.setEchoMode(QLineEdit.EchoMode.Password)
+        v.addWidget(self.pwd)
 
-    def show_dashboard(self):
-        self.clear()
-        DashboardUI(self.container, self)
+        btn = QPushButton("ENTER SYSTEM")
+        btn.clicked.connect(self.login)
+        v.addWidget(btn)
 
-# -----------------------------
-# LOGIN UI
-# -----------------------------
-class LoginUI(ctk.CTkFrame):
-    def __init__(self, parent, app):
-        super().__init__(parent, fg_color="#0f172a", corner_radius=30)
-        self.app = app
-        self.place(relx=0.5, rely=0.5, anchor="center")
+        card.setLayout(v)
 
-        ctk.CTkLabel(self, text="⚡ LEGEND ACCESS",
-                     font=("Segoe UI", 30, "bold"),
-                     text_color="#22d3ee").pack(pady=20)
-
-        self.user = ctk.CTkEntry(self, placeholder_text="USERNAME", width=280)
-        self.user.pack(pady=10)
-
-        self.pwd = ctk.CTkEntry(self, placeholder_text="PASSWORD", show="*", width=280)
-        self.pwd.pack(pady=10)
-
-        ctk.CTkButton(self, text="ENTER SYSTEM",
-                      fg_color="#06b6d4",
-                      command=self.login).pack(pady=15)
+        layout.addStretch()
+        layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addStretch()
+        self.setLayout(layout)
 
     def login(self):
-        if self.user.get() == "admin":
-            self.app.show_dashboard()
+        if self.user.text() == "admin":
+            self.dashboard = Dashboard()
+            self.dashboard.show()
+            self.close()
         else:
-            messagebox.showerror("DENIED", "ACCESS FAILED")
+            QMessageBox.warning(self, "Error", "Access Denied")
 
 # -----------------------------
 # DASHBOARD
 # -----------------------------
-class DashboardUI(ctk.CTkFrame):
-    def __init__(self, parent, app):
-        super().__init__(parent, fg_color="transparent")
-        self.pack(fill="both", expand=True)
+class Dashboard(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("⚡ GOD MODE DASHBOARD")
+        self.setGeometry(200, 100, 1300, 750)
 
-        content = ctk.CTkFrame(self, fg_color="transparent")
-        content.pack(fill="both", expand=True, padx=20, pady=20)
+        self.setStyleSheet("""
+        QWidget { background:#020617; color:white; }
+        QFrame { background:#111827; border-radius:15px; border:1px solid #22d3ee; }
+        QLabel { font-size:14px; }
+        """)
 
-        self.cpu = self.card(content, "CPU")
-        self.cpu.pack(pady=10)
+        layout = QVBoxLayout()
 
-        self.mem = self.card(content, "MEMORY")
-        self.mem.pack(pady=10)
+        title = QLabel("⚡ LIVE SYSTEM MONITOR")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("font-size:26px; color:#22d3ee;")
+        layout.addWidget(title)
 
-        self.term = self.card(content, "TERMINAL")
-        self.term.pack(pady=10)
+        grid = QGridLayout()
 
-        self.cpu_bar = ctk.CTkProgressBar(self.cpu)
-        self.cpu_bar.pack(pady=10)
+        # CPU GRAPH
+        self.cpu_plot = self.create_graph("CPU Usage")
+        grid.addWidget(self.cpu_plot["frame"], 0, 0)
 
-        self.mem_bar = ctk.CTkProgressBar(self.mem)
-        self.mem_bar.pack(pady=10)
+        # MEMORY GRAPH
+        self.mem_plot = self.create_graph("Memory Usage")
+        grid.addWidget(self.mem_plot["frame"], 0, 1)
 
-        self.terminal = ctk.CTkTextbox(self.term, height=120)
-        self.terminal.pack(fill="both", padx=10, pady=10)
+        # TERMINAL
+        self.terminal = QTextEdit()
+        self.terminal.setStyleSheet("background:#000; color:#22d3ee;")
+        grid.addWidget(self.terminal, 1, 0, 1, 2)
 
-        self.animate()
-        self.logs()
+        layout.addLayout(grid)
+        self.setLayout(layout)
 
-    def card(self, parent, title):
-        card = ctk.CTkFrame(parent, corner_radius=20, fg_color="#0f172a")
-        ctk.CTkLabel(card, text=title,
-                     font=("Segoe UI", 16, "bold"),
-                     text_color="#22d3ee").pack(pady=10)
-        return card
+        # Data
+        self.cpu_data = [0]*50
+        self.mem_data = [0]*50
 
-    def animate(self):
-        cpu = random.randint(10, 90)
-        mem = random.randint(20, 80)
+        # Timer
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_data)
+        self.timer.start(1000)
 
-        self.cpu_bar.set(cpu / 100)
-        self.mem_bar.set(mem / 100)
+    def create_graph(self, title):
+        frame = QFrame()
+        v = QVBoxLayout()
 
-        self.after(700, self.animate)
+        lbl = QLabel(title)
+        lbl.setStyleSheet("color:#22d3ee; font-size:16px;")
+        v.addWidget(lbl)
 
-    def logs(self):
-        msgs = ["Scanning...", "Encrypting...", "Monitoring...", "System OK"]
-        self.terminal.insert("end", f"> {random.choice(msgs)}\n")
-        self.terminal.see("end")
-        self.after(1000, self.logs)
+        plot = pg.PlotWidget()
+        plot.setBackground("#111827")
+        curve = plot.plot(pen=pg.mkPen("#22d3ee", width=2))
+
+        v.addWidget(plot)
+        frame.setLayout(v)
+
+        return {"frame": frame, "plot": plot, "curve": curve}
+
+    def update_data(self):
+        cpu = psutil.cpu_percent()
+        mem = psutil.virtual_memory().percent
+
+        self.cpu_data = self.cpu_data[1:] + [cpu]
+        self.mem_data = self.mem_data[1:] + [mem]
+
+        self.cpu_plot["curve"].setData(self.cpu_data)
+        self.mem_plot["curve"].setData(self.mem_data)
+
+        self.terminal.append(f"> CPU: {cpu}% | MEM: {mem}%")
 
 # -----------------------------
 # RUN
 # -----------------------------
 if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+    app = QApplication(sys.argv)
+    win = LoginWindow()
+    win.show()
+    sys.exit(app.exec())
