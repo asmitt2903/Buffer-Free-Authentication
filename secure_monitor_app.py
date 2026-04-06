@@ -170,6 +170,12 @@ class AuthManager:
             f.write(entry + "\n")
     
     def register_user(self, username: str, password: str, role: str = "user") -> str:
+        #         """
+        # Registers a new user with hashed password and OTP secret.
+
+        # Returns:
+        #     str: OTP secret for MFA setup
+        # """
         # Input Validation (Bounds Checking)
         if len(username) < 3 or len(username) > 20 or not re.match(r"^[a-zA-Z0-9_]+$", username):
             raise ValueError("Invalid username format.")
@@ -215,6 +221,13 @@ class AuthManager:
         return "LOW"
 
     def login(self, username: str, password: str, otp_code: str | None = None):
+
+        #         """
+        # Handles user authentication with password and optional MFA.
+
+        # Returns:
+        #     tuple: (status, message)
+        # """
         # ---------------------------------------------------
         # VULNERABILITY DEMONSTRATIONS (EDUCATIONAL USE ONLY)
         # ---------------------------------------------------
