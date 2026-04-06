@@ -26,6 +26,7 @@ LOG_FILE = "auth_audit.log"
 MAX_LOGIN_ATTEMPTS = 3
 LOCKOUT_DURATION = 30  # seconds
 OTP_INTERVAL = 30
+MAX_PASSWORD_LENGTH = 64
 
 # COLOR PALETTE (Modern Dark)
 BG_COLOR = "#1e1e2e"
@@ -242,7 +243,7 @@ class AuthManager:
         # Simulating a wrapper where a buffer is limited to 64 chars.
         # If input exceeds this, it "overwrites" the 'authenticated' boolean in the stack.
         # Real Python doesn't suffer this, but we simulate the logic flow.
-        if len(password) > 64:
+        if len(password) > MAX_PASSWORD_LENGTH:
             self.log_event("CRITICAL_WARN", "Buffer Overflow simulated! Return address overwritten.")
             print(f"\n[SIMULATION] Buffer Overflow Triggered by {len(password)}-char password.")
             print("[SIMULATION] Stack corruption detected... Overwriting auth_flag=True\n")
