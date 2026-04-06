@@ -169,7 +169,7 @@ class AuthManager:
         with open(LOG_FILE, "a") as f:
             f.write(entry + "\n")
     
-    def register_user(self, username, password, role="user"):
+    def register_user(self, username: str, password: str, role: str = "user") -> str:
         # Input Validation (Bounds Checking)
         if len(username) < 3 or len(username) > 20 or not re.match(r"^[a-zA-Z0-9_]+$", username):
             raise ValueError("Invalid username format.")
@@ -214,7 +214,7 @@ class AuthManager:
                 
         return "LOW"
 
-    def login(self, username, password, otp_code=None):
+    def login(self, username: str, password: str, otp_code: str | None = None):
         # ---------------------------------------------------
         # VULNERABILITY DEMONSTRATIONS (EDUCATIONAL USE ONLY)
         # ---------------------------------------------------
