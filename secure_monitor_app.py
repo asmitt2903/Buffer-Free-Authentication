@@ -399,14 +399,14 @@ class LoginFrame(tk.Frame):
         ModernButton(btn_frame, text="REGISTER", command=self.attempt_register, bg=ENTRY_BG, fg=FG_COLOR).pack(side="left")
 
     def attempt_login(self):
-        u = self.user_var.get()
-        p = self.pass_var.get()
+        username = self.user_var.get()
+        password = self.pass_var.get()
         
-        if not u or not p:
+        if not username or not password:
             messagebox.showerror("Error", "Fields cannot be empty")
             return
 
-        status, msg = self.controller.auth_manager.login(u, p)
+        status, msg = self.controller.auth_manager.login(username, password)
         
         if status == True:
             self.controller.show_dashboard(u)
@@ -414,7 +414,7 @@ class LoginFrame(tk.Frame):
             # Ask for MFA
             otp = simpledialog.askstring("MFA Verification", f"{msg}\nEnter OTP Code from Authenticator:")
             if otp:
-                status2, msg2 = self.controller.auth_manager.login(u, p, otp)
+               status2, msg2 = self.controller.auth_manager.login(username, password, otp)
                 if status2 == True:
                     self.controller.show_dashboard(u)
                 else:
